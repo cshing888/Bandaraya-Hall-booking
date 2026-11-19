@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Hall Booking</title>
+<style>
+  :root {
+    --cream: #FDF8F0;
+    --peach: #FFE8D6;
+    --teal: #2A9D8F;
+    --teal-dark: #1F7A70;
+    --coral: #E76F51;
+    --brown: #5C4A3A;
+    --card: #FFFFFF;
+    --soft-shadow: 0 4px 14px rgba(92, 74, 58, 0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--cream);
+    color: var(--brown);
+    line-height: 1.6;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header.hero {
+    text-align: center;
+    padding: 28px 16px;
+    background: linear-gradient(135deg, var(--peach), #FFF6EC);
+    border-radius: 20px;
+    box-shadow: var(--soft-shadow);
+    margin-bottom: 28px;
+  }
+  header.hero h1 { color: var(--teal-dark); font-size: 1.7rem; margin-bottom: 6px; }
+  header.hero p { color: var(--brown); font-size: 1rem; }
+  section.card {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--soft-shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  section.card h2 {
+    color: var(--teal-dark);
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+  }
+  .section-sub { font-size: 0.92rem; color: #8a7a6a; margin-bottom: 16px; }
+
+  /* Hall selector */
+  .hall-tabs { display: flex; gap: 10px; margin-bottom: 14px; }
+  .hall-tab {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--peach);
+    background: #FFF9F2;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brown);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .hall-tab.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+  .hall-note {
+    background: var(--peach);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+  .slot-list { list-style: none; }
+  .slot-item {
+    padding: 12px 16px;
+    border: 2px solid #F0E4D6;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slot-item:hover { border-color: var(--teal); background: #F3FAF8; }
+  .slot-item.selected {
+    border-color: var(--teal);
+    background: #E4F5F2;
+    font-weight: 600;
+  }
+  .slot-item .badge {
+    font-size: 0.8rem;
+    background: var(--peach);
+    color: var(--coral);
+    padding: 2px 10px;
+    border-radius: 999px;
+  }
+  .slot-item.selected .badge { background: var(--teal); color: #fff; }
+  .slot-hint { font-size: 0.85rem; color: #8a7a6a; margin-top: 6px; }
+
+  /* Form */
+  .picked-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .picked-chip {
+    background: #E4F5F2;
+    border: 1.5px solid var(--teal);
+    color: var(--teal-dark);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+  .field label .req { color: var(--coral); }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid #F0E4D6;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--brown);
+    background: #FFFEFB;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--teal); }
+  .field textarea { min-height: 80px; resize: vertical; }
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-submit:hover { background: #d95f42; }
+  .msg {
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 0.93rem;
+    margin-top: 14px;
+    display: none;
+  }
+  .msg.gentle {
+    display: block;
+    background: #FFF1E8;
+    border: 1.5px solid var(--coral);
+    color: #a8432b;
+  }
+  .msg.okay {
+    display: block;
+    background: #E4F5F2;
+    border: 1.5px solid var(--teal);
+    color: var(--teal-dark);
+  }
+
+  /* Summary */
+  .req-list { list-style: none; }
+  .req-item {
+    border: 2px solid #F0E4D6;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: #FFFEFB;
+  }
+  .req-item .req-head {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .req-item .req-hall { font-weight: 700; color: var(--teal-dark); }
+  .req-item .req-slot { font-weight: 600; color: var(--coral); }
+  .req-item .req-meta { font-size: 0.9rem; color: #8a7a6a; }
+  .req-item.is-new { animation: popIn 0.4s ease; border-color: var(--teal); }
+  @keyframes popIn {
+    from { transform: scale(0.97); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .req-count { font-size: 0.85rem; color: #8a7a6a; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Community Hall Booking</h1>
+    <p>Check free slots at our dewan &amp; surau, and send a booking request in seconds.</p>
+  </header>
+
+  <!-- Section 1: Hall selector and free slots -->
+  <section class="card" aria-label="Hall selector and free slots">
+    <h2>1. Choose a Hall &amp; Free Slot</h2>
+    <p class="section-sub">Tap a hall, then tap a free slot to pick it for your booking.</p>
+
+    <div class="hall-tabs">
+      <button type="button" class="hall-tab active" id="tab-dewan">Dewan Komuniti Taman Melati</button>
+      <button type="button" class="hall-tab" id="tab-surau">Surau Al-Ikhlas</button>
+    </div>
+
+    <div class="hall-note" id="hall-note"></div>
+    <ul class="slot-list" id="slot-list"></ul>
+    <p class="slot-hint">Tip: tap a slot above and it will be filled into the booking form below.</p>
+  </section>
+
+  <!-- Section 2: Booking request form -->
+  <section class="card" aria-label="Booking request form">
+    <h2>2. Booking Request Form</h2>
+    <p class="section-sub">Your selected slot appears here. Fill in your details and submit.</p>
+
+    <div class="picked-strip">
+      <span class="picked-chip" id="chip-hall">Hall: —</span>
+      <span class="picked-chip" id="chip-slot">Slot: —</span>
+    </div>
+
+    <form id="booking-form" novalidate>
+      <div class="field">
+        <label for="f-name">Your name <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="e.g. Aisyah binti Omar">
+      </div>
+      <div class="field">
+        <label for="f-phone">Phone number <span class="req">*</span></label>
+        <input type="tel" id="f-phone" placeholder="e.g. 012-345 6789">
+      </div>
+      <div class="field">
+        <label for="f-msg">Short message <span class="req">*</span></label>
+        <textarea id="f-msg" placeholder="e.g. kenduri doa selamat for 40 guests"></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Submit Booking Request</button>
+      <div class="msg" id="form-msg" role="status"></div>
+    </form>
+  </section>
+
+  <!-- Section 3: Today's requests summary -->
+  <section class="card" aria-label="Today's requests summary">
+    <h2>3. Today's Requests</h2>
+    <p class="section-sub">Booking requests made on this page today (sample requests included).</p>
+    <p class="req-count" id="req-count"></p>
+    <ul class="req-list" id="req-list"></ul>
+  </section>
+
+</div>
+
+<script>
+  // ---------- Sample data (made up, Malaysia-specific) ----------
+  var HALLS = {
+    dewan: {
+      name: "Dewan Komuniti Taman Melati",
+      note: "Dewan closed on the first Monday of each month for gotong-royong cleaning. Tables and chairs included.",
+      slots: [
+        { id: "d1", time: "Saturday 8:00 AM – 12:00 PM", label: "Morning" },
+        { id: "d2", time: "Saturday 2:00 PM – 6:00 PM", label: "Afternoon" },
+        { id: "d3", time: "Sunday 9:00 AM – 1:00 PM", label: "Morning" }
+      ]
+    },
+    surau: {
+      name: "Surau Al-Ikhlas",
+      note: "Surau slots are outside daily prayer times. Please keep events quiet and tidy after use.",
+      slots: [
+        { id: "s1", time: "Friday 3:00 PM – 5:00 PM", label: "After Zohor" },
+        { id: "s2", time: "Saturday 8:30 PM – 10:00 PM", label: "After Isyak" },
+        { id: "s3", time: "Sunday 4:30 PM – 6:00 PM", label: "Before Maghrib" }
+      ]
+    }
+  };
+
+  // Sample requests already visible on first open
+  var requests = [
+    { hall: "Dewan Komuniti Taman Melati", slot: "Saturday 8:00 AM – 12:00 PM",
+      name: "Encik Razali bin Hamid", phone: "013-221 4455", msg: "Kenduri kahwin for 60 guests" },
+    { hall: "Surau Al-Ikhlas", slot: "Saturday 8:30 PM – 10:00 PM",
+      name: "Puan Fatimah binti Yusof", phone: "019-883 2014", msg: "Kelas mengaji kanak-kanak" },
+    { hall: "Dewan Komuniti Taman Melati", slot: "Sunday 9:00 AM – 1:00 PM",
+      name: "AJK Taman Sri Murni", phone: "011-4027 9981", msg: "Mesyuarat agong tahunan penduduk" }
+  ];
+
+  var currentHall = "dewan";
+  var selectedSlotId = null;
+
+  // ---------- Section 1: hall tabs + slots ----------
+  function selectHall(key) {
+    currentHall = key;
+    var hall = HALLS[key];
+    // if the picked slot doesn't belong to the new hall, clear the selection
+    if (selectedSlotId && !hall.slots.some(function (s) { return s.id === selectedSlotId; })) {
+      selectedSlotId = null;
+      updateChips();
+    }
+    document.getElementById("tab-dewan").classList.toggle("active", key === "dewan");
+    document.getElementById("tab-surau").classList.toggle("active", key === "surau");
+    document.getElementById("hall-note").textContent = hall.note;
+    renderSlots();
+  }
+
+  function currentSlot() {
+    var s = HALLS[currentHall].slots.filter(function (x) { return x.id === selectedSlotId; })[0];
+    return s ? { time: s.time, hall: HALLS[currentHall].name } : null;
+  }
+
+  function renderSlots() {
+    var list = document.getElementById("slot-list");
+    list.innerHTML = "";
+    HALLS[currentHall].slots.forEach(function (s) {
+      var li = document.createElement("li");
+      li.className = "slot-item" + (s.id === selectedSlotId ? " selected" : "");
+      li.innerHTML = '<span>' + s.time + '</span><span class="badge">' + s.label + '</span>';
+      li.onclick = function () { pickSlot(s.id); };
+      list.appendChild(li);
+    });
+  }
+
+  function pickSlot(id) {
+    selectedSlotId = id;
+    renderSlots();
+    updateChips();
+    var m = document.getElementById("form-msg");
+    m.className = "msg"; // clear old messages
+    document.getElementById("booking-form").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ---------- Section 2: chips + validation + submit ----------
+  function updateChips() {
+    var s = currentSlot();
+    document.getElementById("chip-hall").textContent = "Hall: " + (s ? s.hall : "—");
+    document.getElementById("chip-slot").textContent = "Slot: " + (s ? s.time : "—");
+  }
+
+  function showMsg(text, kind) {
+    var m = document.getElementById("form-msg");
+    m.className = "msg " + kind;
+    m.textContent = text;
+  }
+
+  document.getElementById("booking-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("f-name").value.trim();
+    var phone = document.getElementById("f-phone").value.trim();
+    var msg = document.getElementById("f-msg").value.trim();
+
+    // Gentle validation
+    var missing = [];
+    if (!selectedSlotId) missing.push("a free slot (tap one in Section 1)");
+    if (!name) missing.push("your name");
+    if (!phone) missing.push("your phone number");
+    if (!msg) missing.push("a short message");
+
+    if (missing.length) {
+      showMsg("Almost there! Please add " + missing.join(", ") + " before submitting. 😊", "gentle");
+      return;
+    }
+
+    var s = currentSlot();
+    requests.unshift({ hall: s.hall, slot: s.time, name: name, phone: phone, msg: msg, isNew: true });
+    renderRequests();
+
+    // Clear form + selection for the next request
+    this.reset();
+    selectedSlotId = null;
+    renderSlots();
+    updateChips();
+    showMsg("Terima kasih! Your request has been added to today's summary below. ✅", "okay");
+  });
+
+  // ---------- Section 3: summary ----------
+  function renderRequests() {
+    var list = document.getElementById("req-list");
+    list.innerHTML = "";
+    requests.forEach(function (r) {
+      var li = document.createElement("li");
+      li.className = "req-item" + (r.isNew ? " is-new" : "");
+      li.innerHTML =
+        '<div class="req-head"><span class="req-hall">' + escapeHtml(r.hall) + '</span>' +
+        '<span class="req-slot">' + escapeHtml(r.slot) + '</span></div>' +
+        '<div class="req-meta">' + escapeHtml(r.name) + ' • ' + escapeHtml(r.phone) + '</div>' +
+        '<div class="req-meta">' + escapeHtml(r.msg) + '</div>';
+      delete r.isNew;
+      list.appendChild(li);
+    });
+    document.getElementById("req-count").textContent =
+      requests.length + " request" + (requests.length === 1 ? "" : "s") + " so far today";
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ---------- init ----------
+  (function init() {
+    document.getElementById("tab-dewan").onclick = function () { selectHall("dewan"); };
+    document.getElementById("tab-surau").onclick = function () { selectHall("surau"); };
+    document.getElementById("hall-note").textContent = HALLS.dewan.note;
+    renderSlots();
+    updateChips();
+    renderRequests();
+  })();
+</script>
+</body>
+</html>
